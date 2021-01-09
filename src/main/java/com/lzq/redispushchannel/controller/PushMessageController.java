@@ -55,7 +55,7 @@ public class PushMessageController {
     //查询附近n米内的场馆
     @RequestMapping(value = "location")
     public List<GeoVo> queryGeo(double longitude, double latitude,String mi){
-       return redisKitService.getShopIdByGeo("location",longitude,latitude,mi);
+       return redisKitService.getShopIdByGeo("location",longitude,5,mi);
     }
     @Test
     public void test(){
