@@ -1,7 +1,9 @@
 package com.lzq.redispushchannel.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Point;
+import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.BoundGeoOperations;
 import org.springframework.data.redis.core.GeoOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -790,7 +792,20 @@ public class RedisService {
      * @return
      */
     public BoundGeoOperations boundGeoOps(String key){
+
         BoundGeoOperations stringStringBoundGeoOperations = stringRedisTemplate.boundGeoOps(key);
         return stringStringBoundGeoOperations;
+    }
+
+    /**
+     * 计算两个人之间的距离
+     * @param key
+     * @param user
+     * @param user1
+     * @return
+     */
+    public Double getDistance(String key,String user ,String user1){
+        Distance distance = stringRedisTemplate.opsForGeo().distance(key, user, user1, RedisGeoCommands.DistanceUnit.KILOMETERS);
+        return distance.getValue();
     }
 }

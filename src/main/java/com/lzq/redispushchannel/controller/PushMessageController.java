@@ -33,6 +33,7 @@ public class PushMessageController {
     private RedisService redisService;
     @Autowired
     private RedisKitService redisKitService;
+
     @GetMapping("/pushMessage")
     public void pushMessage(String message){
         redisTemplate.convertAndSend("messagepush",message);
@@ -55,10 +56,15 @@ public class PushMessageController {
     //查询附近n米内的场馆
     @RequestMapping(value = "location")
     public List<GeoVo> queryGeo(double longitude, double latitude,String mi){
-       return redisKitService.getShopIdByGeo("location",longitude,5,mi);
+        redisService.setGeo("location",Double.valueOf("114.087773"),Double.valueOf("35.110119"),"江波车行");
+        redisService.setGeo("location",Double.valueOf("114.086816"),Double.valueOf("35.109838"),"惠民超市");
+        System.out.println("距离"+redisService.getDistance("location", "江波车行", "惠民超时"));
+        return redisKitService.getShopIdByGeo("location",longitude,latitude,mi);
     }
     @Test
     public void test(){
-        System.out.println(redisService.boundGeoOps("location"));
+        redisService.setGeo("location",Double.valueOf("114.087773"),Double.valueOf("35.110119"),"江波车行");
+        redisService.setGeo("location",Double.valueOf("114.086816"),Double.valueOf("35.109838"),"惠民超市");
+        System.out.println("距离"+redisService.getDistance("location", "江波车行", "惠民超时"));
     }
 }
