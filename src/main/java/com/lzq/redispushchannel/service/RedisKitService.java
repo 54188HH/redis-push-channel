@@ -29,7 +29,7 @@ public class RedisKitService {
      * @param key  键
      * @param longitude  经度   String类型
      * @param latitude   纬度   String类型
-     * @param distance  距离  没有时默认3km
+     * @param mi  距离  没有时默认3km
      * @return list  商家id集合
      */
     public List<GeoVo> getShopIdByGeo(String key, double longitude, double latitude, String mi){

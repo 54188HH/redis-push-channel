@@ -25,8 +25,8 @@ public class TestController {
     private static final Logger logger = LoggerFactory.getLogger(TestController.class);
     @Test
     public void getData(){
-        redisService.setGeo("location",Double.valueOf("120.071050"),Double.valueOf("30.282741"),"西湖区文体中心");
-        redisService.setGeo("location",Double.valueOf("120.218862"),Double.valueOf("30.287623"),"杭州市职工文化中心");
+        redisService.setGeo("location",Double.valueOf("120.261432"),Double.valueOf("30.317339"),"西湖区文体中心");
+        redisService.setGeo("location",Double.valueOf("120.261432"),Double.valueOf("30.317339"),"杭州市职工文化中心");
         System.out.println("距离"+redisService.getDistance("location", "西湖区文体中心", "杭州市职工文化中心")
         );
     }
