@@ -1,20 +1,18 @@
 package com.lzq.redispushchannel.service;
 
+import com.lzq.redispushchannel.config.RedisCacheContants;
+import com.lzq.redispushchannel.po.LikedCountDTO;
+import com.lzq.redispushchannel.po.UserLike;
+import com.lzq.redispushchannel.utils.RedisKeyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisGeoCommands;
-import org.springframework.data.redis.core.BoundGeoOperations;
-import org.springframework.data.redis.core.GeoOperations;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -24,6 +22,8 @@ public class RedisService {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     // =============================common============================
 
@@ -807,5 +807,73 @@ public class RedisService {
     public Double getDistance(String key,String user ,String user1){
         Distance distance = stringRedisTemplate.opsForGeo().distance(key, user, user1, RedisGeoCommands.DistanceUnit.KILOMETERS);
         return distance.getValue();
+    }
+
+
+
+
+
+
+
+    public void saveLiked2Redis(String likedUserId, String likedPostId) {
+        String key = RedisKeyUtils.getLikedKey(likedUserId, likedPostId);
+        redisTemplate.opsForHash().put(RedisCacheContants.MAP_KEY_USER_LIKED, key, RedisCacheContants.LIKE);
+        incrementLikedCount(likedUserId);
+    }
+
+    public void unlikeFromRedis(String likedUserId, String likedPostId) {
+        String key = RedisKeyUtils.getLikedKey(likedUserId, likedPostId);
+        redisTemplate.opsForHash().put(RedisCacheContants.MAP_KEY_USER_LIKED, key, RedisCacheContants.UNLIKE);
+        decrementLikedCount(likedUserId);
+        deleteLikedFromRedis(likedUserId,likedPostId);
+    }
+
+    public void deleteLikedFromRedis(String likedUserId, String likedPostId) {
+        String key = RedisKeyUtils.getLikedKey(likedUserId, likedPostId);
+        redisTemplate.opsForHash().delete(RedisCacheContants.MAP_KEY_USER_LIKED, key);
+    }
+
+    public void incrementLikedCount(String likedUserId) {
+        redisTemplate.opsForHash().increment(RedisCacheContants.MAP_KEY_USER_LIKED_COUNT, likedUserId, 1);
+    }
+
+    public void decrementLikedCount(String likedUserId) {
+        redisTemplate.opsForHash().increment(RedisCacheContants.MAP_KEY_USER_LIKED_COUNT, likedUserId, -1);
+    }
+
+    public List<UserLike> getLikedDataFromRedis() {
+        Cursor<Map.Entry<Object, Object>> cursor = redisTemplate.opsForHash().scan(RedisCacheContants.MAP_KEY_USER_LIKED, ScanOptions.NONE);
+        List<UserLike> list = new ArrayList<>();
+        while (cursor.hasNext()){
+            Map.Entry<Object, Object> entry = cursor.next();
+            String key = (String) entry.getKey();
+            //分离出 likedUserId，likedPostId
+            String[] split = key.split("::");
+            String likedUserId = split[0];
+            String likedPostId = split[1];
+            Integer value = (Integer) entry.getValue();
+
+            //组装成 UserLike 对象
+            UserLike userLike = new UserLike(likedUserId, likedPostId, value);
+            list.add(userLike);
+
+            //存到 list 后从 Redis 中删除
+            redisTemplate.opsForHash().delete(RedisCacheContants.MAP_KEY_USER_LIKED, key);
+        }
+        return list;
+    }
+    public List<LikedCountDTO> getLikedCountFromRedis() {
+        Cursor<Map.Entry<Object, Object>> cursor = redisTemplate.opsForHash().scan(RedisCacheContants.MAP_KEY_USER_LIKED_COUNT, ScanOptions.NONE);
+        List<LikedCountDTO> list = new ArrayList<>();
+        while (cursor.hasNext()){
+            Map.Entry<Object, Object> map = cursor.next();
+            //将点赞数量存储在 LikedCountDT
+            String key = (String)map.getKey();
+            LikedCountDTO dto = new LikedCountDTO(Long.valueOf(key), (Integer) map.getValue());
+            list.add(dto);
+            //从Redis中删除这条记录
+            redisTemplate.opsForHash().delete(RedisCacheContants.MAP_KEY_USER_LIKED_COUNT, key);
+        }
+        return list;
     }
 }

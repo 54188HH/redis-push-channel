@@ -7,15 +7,12 @@ import lombok.NoArgsConstructor;
 /**
  * @author lzq
  * @version 1.0
- * @date 2021/3/10 15:28
+ * @date 2021/11/5 10:25
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
-    private String name;
-    private String mobile;
-    private int age;
-    private int likeNum;
+public class LikedCountDTO {
     private Long id;
+    private Integer count;
 }

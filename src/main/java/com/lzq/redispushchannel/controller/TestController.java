@@ -23,16 +23,16 @@ public class TestController {
     @Autowired
     private RedisUtils redisUtils;
     private static final Logger logger = LoggerFactory.getLogger(TestController.class);
+
     @Test
-    public void getData(){
-        redisService.setGeo("location",Double.valueOf("120.261432"),Double.valueOf("30.317339"),"西湖区文体中心");
-        redisService.setGeo("location",Double.valueOf("120.261432"),Double.valueOf("30.317339"),"杭州市职工文化中心");
-        System.out.println("距离"+redisService.getDistance("location", "西湖区文体中心", "杭州市职工文化中心")
-        );
+    public void getData() {
+        redisService.setGeo("location", Double.valueOf("120.261432"), Double.valueOf("30.317339"), "西湖区文体中心");
+        redisService.setGeo("location", Double.valueOf("120.261432"), Double.valueOf("30.317339"), "杭州市职工文化中心");
+        System.out.println("距离" + redisService.getDistance("location", "西湖区文体中心", "杭州市职工文化中心"));
     }
 
     @Test
-    public void getData1(){
+    public void getData1() {
         User user = new User();
         user.setAge(18);
         user.setMobile("15903031938");
@@ -42,21 +42,22 @@ public class TestController {
         user1.setAge(20);
         user1.setMobile("15660855898");
         user1.setName("lzq1");
-        redisUtils.lPush("list","qqq");
-        redisUtils.lPush("list","www");
-        System.out.println("第一次打印："+redisUtils.lRange("list",0,-1));
-        redisUtils.lRemove("list",0,user1.toString());
+        redisUtils.lPush("list", "qqq");
+        redisUtils.lPush("list", "www");
+        System.out.println("第一次打印：" + redisUtils.lRange("list", 0, -1));
+        redisUtils.lRemove("list", 0, user1.toString());
         user1.setName("lzq");
         user1.setMobile("15903031988");
         user1.setAge(24);
-        redisUtils.lPush("list","eeee");
-        System.out.println("第二次打印"+redisUtils.lRange("list",0,-1));
+        redisUtils.lPush("list", "eeee");
+        System.out.println("第二次打印" + redisUtils.lRange("list", 0, -1));
     }
 
     @Test
-    public void getLock(){
+    public void getLock() {
         System.out.println(testRedisLock());
     }
+
     @RedisLockAnnotation(typeEnum = RedisLockTypeEnum.ONE, lockTime = 3)
     public Book testRedisLock() {
         try {
