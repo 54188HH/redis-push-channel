@@ -55,10 +55,11 @@ public class LikedService {
      * @return
      */
     public UserLike getByLikedUserIdAndLikedPostId(String likedUserId, String likedPostId) {
-        Example example = new Example(UserLike.class);
+  /*      Example example = new Example(UserLike.class);
         example.createCriteria().andEqualTo("likedUserId", likedUserId)
                 .andEqualTo("likedPostId", likedPostId);
-        return likeMapper.selectOneByExample(example);
+        return likeMapper.selectOneByExample(example);*/
+        return null;
     }
 
     /**
