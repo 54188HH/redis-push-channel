@@ -440,6 +440,40 @@ public class RedisService {
         }
     }
 
+    public long zSet(final String key, Set<ZSetOperations.TypedTuple<String>> var2) {
+        return stringRedisTemplate.opsForZSet().add(key, var2);
+    }
+
+    /**
+     * 排行榜加分
+     * @param key
+     * @param key1
+     * @param score
+     * @return
+     */
+    public Double incrementScore(String key,String key1,Double score){
+        return redisTemplate.opsForZSet().incrementScore(key, key1, score);
+    }
+    /**
+     * 获取个人排名
+     * @param key
+     * @param key1
+     * @return
+     */
+    public Long getOneRank(String key,String key1){
+        return stringRedisTemplate.opsForZSet().reverseRank(key, key1);
+    }
+
+    /**
+     * 获取个人分数
+     * @param key
+     * @param key1
+     * @return
+     */
+    public Double  getOneScore(String key,String key1){
+        return stringRedisTemplate.opsForZSet().score(key, key1);
+    }
+
     /**
      * 获取指定值的排名
      * @param key redis key
@@ -462,19 +496,28 @@ public class RedisService {
      * @param key redis key
      * @return
      */
-    public Set<String> ranges(final String key) {
+    public Set<String> ranges(final String key,Long start,Long end) {
         //按照排名先后(从小到大)打印指定区间内的元素, -1为打印全部
         try {
-            return stringRedisTemplate.opsForZSet().range(key, 0, -1);
+            if (null == start || null == end){
+                return stringRedisTemplate.opsForZSet().reverseRange(key, 0, -1);
+            }else {
+                return stringRedisTemplate.opsForZSet().reverseRange(key, start, end);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public Set<ZSetOperations.TypedTuple<String>> getRanks(final String key) {
+    public Set<ZSetOperations.TypedTuple<String>> getRanks(final String key,Long start,Long end) {
         //返回集合内元素的排名，以及分数（从小到大）
-        return stringRedisTemplate.opsForZSet().rangeWithScores(key, 0, -1);
+        if (null == start || null == end){
+            return stringRedisTemplate.opsForZSet().reverseRangeWithScores(key, 0, -1);
+        }else {
+            return stringRedisTemplate.opsForZSet().reverseRangeWithScores(key, start, end);
+        }
     }
 
     /**

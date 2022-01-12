@@ -1,5 +1,6 @@
 package com.lzq.redispushchannel;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.lzq.redispushchannel.mapper.GameDescMapper;
 import com.lzq.redispushchannel.po.GameDesc;
@@ -8,11 +9,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.DefaultTypedTuple;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -53,5 +58,59 @@ public class RedisPushChannelApplicationTests {
         redisService.hset("test","lzq","15903031938");
         redisService.hset("test","lzq1","15903031938");
         System.out.println(redisService.hmget("test"));
+    }
+    /*****************************************    排行榜操作    *****************************************/
+    public static final String SCORE_RANK = "score_rank";
+    /**
+     * 批量新增
+     */
+    @Test
+    public void batchAdd() {
+        Set<ZSetOperations.TypedTuple<String>> tuples = new HashSet<>();
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 100000; i++) {
+            DefaultTypedTuple<String> tuple = new DefaultTypedTuple<>("张三" + i, 1D + i);
+            tuples.add(tuple);
+        }
+        System.out.println("循环时间:" +( System.currentTimeMillis() - start));
+        Long num = redisService.zSet(SCORE_RANK, tuples);
+        System.out.println("批量新增时间:" +(System.currentTimeMillis() - start));
+        System.out.println("受影响行数：" + num);
+    }
+    /**
+     * 获取排行列表
+     */
+    @Test
+    public void list() {
+        Set<String> range = redisService.ranges(SCORE_RANK, 0L, 9L);
+        System.out.println("获取到的排行列表:" + JSON.toJSONString(range));
+        Set<ZSetOperations.TypedTuple<String>> rangeWithScores = redisService.getRanks(SCORE_RANK, 0L, 9L);
+        System.out.println("获取到的排行和分数列表:" + JSON.toJSONString(rangeWithScores));
+    }
+    /**
+     * 单个新增
+     */
+    @Test
+    public void add() {
+        redisService.zSet(SCORE_RANK, "lzq", 999999D);
+    }
+
+    /**
+     * 给用户加分
+     */
+    @Test
+    public void incrementScore(){
+        redisService.incrementScore(SCORE_RANK,"lzq",1D);
+    }
+    /**
+     * 获取单个的排行
+     */
+    @Test
+    public void find(){
+        Long rankNum = redisService.getOneRank(SCORE_RANK, "lzq");
+        System.out.println("lzq的个人排名：" + (rankNum+1));
+
+        Double score = redisService.getOneScore(SCORE_RANK, "lzq");
+        System.out.println("lzq的分数:" + score);
     }
 }
