@@ -330,6 +330,15 @@ public class RedisService {
         }
     }
 
+    public Set<String> sDiff(final String key,String key1) {
+        try {
+            return stringRedisTemplate.opsForSet().difference(key,key1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     /**
      * 根据value从一个set中查询,是否存在
      *
