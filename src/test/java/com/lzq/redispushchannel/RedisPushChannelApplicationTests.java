@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.lzq.redispushchannel.mapper.GameDescMapper;
 import com.lzq.redispushchannel.po.GameDesc;
+import com.lzq.redispushchannel.service.BloomFilterService;
 import com.lzq.redispushchannel.service.RedisService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,7 +29,15 @@ public class RedisPushChannelApplicationTests {
     private RestTemplate restTemplate;
     @Autowired
     private GameDescMapper descMapper;
+    @Autowired
+    private BloomFilterService bloomFilterService;
 
+
+    @Test
+    public void isTrue(){
+        System.out.println(bloomFilterService.testIdExists(-1L));
+
+    }
     @Test
     public void game(){
         List<GameDesc> list =new ArrayList<>();
